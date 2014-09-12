@@ -13,6 +13,10 @@ Add a dependency on GradlePrePatcher to your build.gradle:
 buildscript {
     repositories {
         // ... more repositories here
+        maven {
+            name = 'nallar'
+            url = 'http://repo.nallar.me/'
+        }
     }
     dependencies {
         // ... more deps here
