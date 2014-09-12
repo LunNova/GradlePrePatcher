@@ -28,7 +28,7 @@ buildscript {
 Add these hooks to the end of your build.gradle:
 
 ```gradle
-import nallar.nmsprepatcher.Main;
+import me.nallar.gradleprepatcher.Main;
 
 // Change these
 def sourceRoot = "src/main/java/" 
