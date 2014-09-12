@@ -25,10 +25,10 @@ public class Main {
 	 */
 	public static void loadPatches(File rootSourceDirectory, File patchDirectory) {
 		if (!patchDirectory.isDirectory()) {
-			throw new IllegalArgumentException("patchDirectory must be a directory.");
+			throw new IllegalArgumentException("patchDirectory (" + patchDirectory + ") must be a directory.");
 		}
 		if (!rootSourceDirectory.isDirectory()) {
-			throw new IllegalArgumentException("rootSourceDirectory must be a directory.");
+			throw new IllegalArgumentException("rootSourceDirectory(" + rootSourceDirectory + ") must be a directory.");
 		}
 		if (!patchDirectory.toString().startsWith(rootSourceDirectory.toString())) {
 			throw new IllegalArgumentException("patchDirectory (" + patchDirectory + ") must be below rootSourceDirectory (" + rootSourceDirectory + ')');
