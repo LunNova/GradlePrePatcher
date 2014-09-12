@@ -1,0 +1,40 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+
+// Extended project information
+ext.projectName = 'GradlePrePatcher'
+ext.inceptionYear = '2014'
+ext.packaging = 'jar'
+ext.url = 'http://nallar.me/minecraft'
+ext.description = 'Log Spam Must Die'
+ext.organization = 'nallar.me'
+
+sourceCompatibility = '1.6'
+targetCompatibility = '1.6'
+
+version = '1.0-SNAPSHOT'
+group = 'me.nallar'
+archivesBaseName = 'GradlePrePatcher'
+
+// Define variables
+ext.buildNumber = project.hasProperty("buildNumber") ? buildNumber : '0'
+ext.ciSystem = project.hasProperty("ciSystem") ? ciSystem : 'unknown'
+ext.commit = project.hasProperty("commit") ? commit : 'unknown'
+
+repositories {
+    mavenCentral()
+    maven { url 'http://repo.nallar.me/' }
+}
+
+dependencies {
+    compile 'com.google.guava:guava:18.0'
+    compile 'org.ow2.asm:asm-all:5.0.3'
+}
+
+jar.manifest.mainAttributes(
+        "Built-By": System.properties['user.name'],
+        "Created-By": System.properties['java.vm.version'] + " (" + System.properties['java.vm.vendor'] + ")",
+        "Implementation-Title": name,
+        "Implementation-Version": version + "+" + ciSystem + "-b" + buildNumber + ".git-" + commit,
+        "Implementation-Vendor": url,
+)
