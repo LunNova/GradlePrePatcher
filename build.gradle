@@ -6,7 +6,7 @@ ext.projectName = 'GradlePrePatcher'
 ext.inceptionYear = '2014'
 ext.packaging = 'jar'
 ext.url = 'http://nallar.me/minecraft'
-ext.description = 'Log Spam Must Die'
+ext.description = 'Gradle Pre Patcher'
 ext.organization = 'nallar.me'
 
 sourceCompatibility = '1.6'
@@ -23,12 +23,16 @@ ext.commit = project.hasProperty("commit") ? commit : 'unknown'
 
 repositories {
     mavenCentral()
-    maven { url 'http://repo.nallar.me/' }
+}
+
+configurations {
+    provided
+    compile.extendsFrom provided
 }
 
 dependencies {
-    compile 'com.google.guava:guava:17.0'
-    compile 'org.ow2.asm:asm-debug-all:5.0.3'
+    provided 'com.google.guava:guava:17.0'
+    provided 'org.ow2.asm:asm-debug-all:5.0.3'
 }
 
 jar.manifest.mainAttributes(
