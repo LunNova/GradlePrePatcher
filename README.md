@@ -50,7 +50,7 @@ afterEvaluate {
         Main.onTaskEnd(task.getOutDirtyJar(), false)
     }
     project.tasks.extractMinecraftSrc.doLast { task ->
-        Main.onTaskEnd(task.getOutJar(), true)
+        Main.onTaskEnd(file("./build/tmp/recompSrc"), true)
     }
 }
 ```
