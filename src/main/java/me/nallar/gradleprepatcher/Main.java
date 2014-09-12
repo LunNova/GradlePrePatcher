@@ -24,6 +24,15 @@ public class Main {
 	 * @param patchDirectory      patch directory path (package containing Patch classes)
 	 */
 	public static void loadPatches(File rootSourceDirectory, File patchDirectory) {
+		if (!patchDirectory.isDirectory()) {
+			throw new IllegalArgumentException("patchDirectory must be a directory.");
+		}
+		if (!rootSourceDirectory.isDirectory()) {
+			throw new IllegalArgumentException("rootSourceDirectory must be a directory.");
+		}
+		if (!patchDirectory.toString().startsWith(rootSourceDirectory.toString())) {
+			throw new IllegalArgumentException("patchDirectory (" + patchDirectory + ") must be below rootSourceDirectory (" + rootSourceDirectory + ')');
+		}
 		Main.rootSourceDirectory = rootSourceDirectory;
 		try {
 			PrePatcher.loadPatches(patchDirectory);
