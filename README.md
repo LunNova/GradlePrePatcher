@@ -47,10 +47,10 @@ afterEvaluate {
     deobfBinJar prepatchInputs
     extractMinecraftSrc prepatchInputs
     project.tasks.deobfBinJar.doLast { task ->
-        Main.editJar(task.getOutDirtyJar(), false)
+        Main.onTaskEnd(task.getOutDirtyJar(), false)
     }
     project.tasks.extractMinecraftSrc.doLast { task ->
-        Main.editJar(task.getOutJar(), true)
+        Main.onTaskEnd(task.getOutJar(), true)
     }
 }
 ```
