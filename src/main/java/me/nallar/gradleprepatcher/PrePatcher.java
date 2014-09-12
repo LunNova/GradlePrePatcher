@@ -24,7 +24,7 @@ import java.util.regex.*;
 class PrePatcher {
 	private static final Logger log = Logger.getLogger("PatchLogger");
 	private static final Pattern privatePattern = Pattern.compile("^(\\s+?)private", Pattern.MULTILINE);
-	private static final Pattern extendsPattern = Pattern.compile("^public.*?\\s+?extends\\s+?([\\S^<]+?)(?:<(\\S+)>)?[\\s]+?(?:implements [^}]+?)?\\{", Pattern.MULTILINE);
+	private static final Pattern extendsPattern = Pattern.compile("^public.*?\\s+?extends\\s+?([\\S^<]+?)(?:<(\\S+)>)?[\\s]+?(?:implements ([^}]+?))?\\{", Pattern.MULTILINE);
 	private static final Pattern declareMethodPattern = Pattern.compile("@Declare\\s+?(public\\s+?(?:(?:synchronized|static) )*(\\S*?)?\\s+?(\\S*?)\\s*?\\S+?\\s*?\\([^\\{]*\\)\\s*?\\{)", Pattern.DOTALL | Pattern.MULTILINE);
 	private static final Pattern declareFieldPattern = Pattern.compile("@Declare\\s+?(public [^;\r\n]+?)_?( = [^;\r\n]+?)?;", Pattern.DOTALL | Pattern.MULTILINE);
 	private static final Pattern packageFieldPattern = Pattern.compile("\n    ? ?([^ ]+  ? ?[^ ]+);");
@@ -70,6 +70,8 @@ class PrePatcher {
 			return;
 		}
 		String shortClassName = extendsMatcher.group(1);
+		log.info("Adding " + shortClassName + " to be prepatched");
+		String interfaceNames = extendsMatcher.group(2);
 		String className = null;
 		Matcher importMatcher = importPattern.matcher(contents);
 		List<String> imports = new ArrayList<String>();
@@ -86,6 +88,11 @@ class PrePatcher {
 			return;
 		}
 		PatchInfo patchInfo = getOrMakePatchInfo(className, shortClassName);
+		if (interfaceNames != null) {
+			for (String s : commaSplitter.split(interfaceNames)) {
+				patchInfo.interfaces.add(new Type(s, imports).clazz);
+			}
+		}
 		Matcher exposeInnerMatcher = exposeInnerPattern.matcher(contents);
 		while (exposeInnerMatcher.find()) {
 			log.severe("Inner class name: " + className + "$" + exposeInnerMatcher.group(1));
@@ -470,6 +477,7 @@ class PrePatcher {
 	private static class PatchInfo {
 		List<MethodInfo> methods = new ArrayList<MethodInfo>();
 		List<FieldInfo> fields = new ArrayList<FieldInfo>();
+		List<String> interfaces = new ArrayList<String>();
 		boolean makePublic = false;
 		String shortClassName;
 		public boolean exposeInners = false;
@@ -523,7 +531,32 @@ class PrePatcher {
 			String name = innerClassMatcher.group(1);
 			inputSource = inputSource.replace("    " + name + '(', "    public " + name + '(');
 		}
-		return inputSource.replace("    ", "\t");
+		inputSource = inputSource.replace("    ", "\t");
+		if (!patchInfo.interfaces.isEmpty()) {
+			Pattern classDeclarationPattern = Pattern.compile("^public\\s+?.*?" + shortClassName + "(?:\\s+?extends\\s+?([\\S^<]+?))?(?:<(\\S+)>)?[\\s]+?(implements [^}]+?)?\\{", Pattern.MULTILINE);
+			Matcher m = classDeclarationPattern.matcher(inputSource);
+			if (!m.find()) {
+				throw new RuntimeException("Failed to find class declaration to add interfaces to prepatching " + shortClassName);
+			}
+			String from = m.group(0);
+			String to = from.substring(0, from.length() - 1);
+			String interfaceMatch = m.group(2);
+			boolean first = false;
+			if (interfaceMatch == null) {
+				to += " implements ";
+				first = true;
+			}
+			for (String interface_ : patchInfo.interfaces) {
+				if (first) {
+					to += interface_;
+				} else {
+					to += interface_ + ", ";
+				}
+				first = false;
+			}
+			inputSource = inputSource.replace(from, to + "}");
+		}
+		return inputSource;
 	}
 
 	private static boolean hasFlag(int access, int flag) {
@@ -595,6 +628,9 @@ class PrePatcher {
 		for (MethodNode methodNode : (Iterable<MethodNode>) classNode.methods) {
 			methodNode.access = methodNode.access & ~Opcodes.ACC_FINAL;
 			methodNode.access = makeAccess(methodNode.access, methodNode.name.equals("<init>") || patchInfo.makePublic);
+		}
+		for (String interface_ : patchInfo.interfaces) {
+			classNode.interfaces.add(interface_.replace(".", "/"));
 		}
 		for (FieldInfo fieldInfo : patchInfo.fields) {
 			classNode.fields.add(new FieldNode(makeAccess(fieldInfo.accessAsInt() & ~Opcodes.ACC_FINAL, patchInfo.makePublic), fieldInfo.name, fieldInfo.type.descriptor(), fieldInfo.type.signature(), null));
