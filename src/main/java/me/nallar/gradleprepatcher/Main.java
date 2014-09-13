@@ -72,8 +72,7 @@ public class Main {
 			byte[] classBytes = ByteStreams.toByteArray(jarInputStream);
 			if (entry.getName().endsWith(".class")) {
 				// PARSING
-				String name = entry.getName().replace('\\', '/');
-				classBytes = PrePatcher.patchCode(classBytes, name);
+				classBytes = PrePatcher.patchCode(classBytes, pathToClassName(entry.getName()));
 			}
 			classBytesMap.put(entry.getName(), classBytes);
 
@@ -121,7 +120,7 @@ public class Main {
 					return FileVisitResult.CONTINUE;
 				}
 				String source = com.google.common.io.Files.toString(path.toFile(), Charsets.UTF_8);
-				String patchedSource = PrePatcher.patchSource(source, partialPath);
+				String patchedSource = PrePatcher.patchSource(source, pathToClassName(partialPath));
 
 				if (!patchedSource.equals(source)) {
 					Files.write(path, patchedSource.getBytes(Charsets.UTF_8));
@@ -151,7 +150,15 @@ public class Main {
 		});
 	}
 
-	public static void deleteDirectory(Path path) throws IOException {
+	private static String pathToClassName(String input) {
+		input = input.replace('\\', '.').replace('/', '.').replace(".java", "").replace(".class", "");
+		if (input.startsWith(".")) {
+			input = input.substring(1);
+		}
+		return input;
+	}
+
+	private static void deleteDirectory(Path path) throws IOException {
 		java.nio.file.Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
 			@Override
 			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)

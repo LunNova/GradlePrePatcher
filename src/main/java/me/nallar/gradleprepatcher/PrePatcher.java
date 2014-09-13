@@ -70,8 +70,7 @@ class PrePatcher {
 			return;
 		}
 		String shortClassName = extendsMatcher.group(1);
-		log.info("Adding " + shortClassName + " to be prepatched");
-		String interfaceNames = extendsMatcher.group(2);
+		String interfaceNames = extendsMatcher.group(3);
 		String className = null;
 		Matcher importMatcher = importPattern.matcher(contents);
 		List<String> imports = new ArrayList<String>();
@@ -483,12 +482,12 @@ class PrePatcher {
 		public boolean exposeInners = false;
 	}
 
-	private static PatchInfo patchForClass(String className) {
-		return patchClasses.get(className.replace("/", ".").replace(".java", "").replace(".class", ""));
+	private static PatchInfo getPatchInfo(String className) {
+		return patchClasses.get(className);
 	}
 
 	public static String patchSource(String inputSource, String inputClassName) {
-		PatchInfo patchInfo = patchForClass(inputClassName);
+		PatchInfo patchInfo = getPatchInfo(inputClassName);
 		if (patchInfo == null) {
 			return inputSource;
 		}
@@ -508,8 +507,7 @@ class PrePatcher {
 		}
 		sourceBuilder.append("\n}");
 		inputSource = sourceBuilder.toString();
-		inputSource = inputSource.replace("\nfinal ", " ");
-		inputSource = inputSource.replace(" final ", " ");
+		inputSource = inputSource.replace("final class", " ");
 		inputSource = inputSource.replace("\nclass", "\npublic class");
 		inputSource = inputSource.replace("\n    " + shortClassName, "\n    public " + shortClassName);
 		inputSource = inputSource.replace("\n    protected " + shortClassName, "\n    public " + shortClassName);
@@ -550,12 +548,13 @@ class PrePatcher {
 				if (first) {
 					to += interface_;
 				} else {
-					to += interface_ + ", ";
+					to += ", " + interface_;
 				}
 				first = false;
 			}
-			inputSource = inputSource.replace(from, to + "}");
+			inputSource = inputSource.replace(from, to + " {");
 		}
+		inputSource = inputSource.replace("protected static String __OBFID", "private static final String __OBFID");
 		return inputSource;
 	}
 
@@ -610,7 +609,7 @@ class PrePatcher {
 		if (superName != null && !superName.equals("java.lang.Object")) {
 			classExtends.put(classNode.name.replace("/", "."), superName);
 		}
-		PatchInfo patchInfo = patchForClass(inputClassName);
+		PatchInfo patchInfo = getPatchInfo(inputClassName);
 		if (patchInfo == null) {
 			return inputCode;
 		}
@@ -622,7 +621,6 @@ class PrePatcher {
 			}
 		}
 		for (FieldNode fieldNode : (Iterable<FieldNode>) classNode.fields) {
-			fieldNode.access = fieldNode.access & ~Opcodes.ACC_FINAL;
 			fieldNode.access = makeAccess(fieldNode.access, patchInfo.makePublic);
 		}
 		for (MethodNode methodNode : (Iterable<MethodNode>) classNode.methods) {

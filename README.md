@@ -3,7 +3,7 @@ GradlePrePatcher [![Build Status](http://nallar.me/buildservice/job/GradlePrePat
 Tool for prepatching minecraft source files. Intended for use with [ModPatcher](https://github.com/nallar/ModPatcher).
 
 Copyright &copy; 2014, nallar <rallan.pcl+gt@gmail.com>
-LogSpamMustDie is licensed under the MIT license.
+GradlePrePatcher is licensed under the MIT license.
 
 Usage
 --------
