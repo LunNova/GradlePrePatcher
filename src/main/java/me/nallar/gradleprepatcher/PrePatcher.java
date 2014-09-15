@@ -538,7 +538,7 @@ class PrePatcher {
 			}
 			String from = m.group(0);
 			String to = from.substring(0, from.length() - 1);
-			String interfaceMatch = m.group(2);
+			String interfaceMatch = m.group(3);
 			boolean first = false;
 			if (interfaceMatch == null) {
 				to += " implements ";

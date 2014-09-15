@@ -1,5 +1,7 @@
 GradlePrePatcher [![Build Status](http://nallar.me/buildservice/job/GradlePrePatcher/badge/icon)](http://nallar.me/buildservice/job/GradlePrePatcher/)
 ==========
+Discontinued. GradlePrePatcher has been replaced by a new system in [JavaPatcher](https://github.com/nallar/ModPatcher) that does not require prepatching.
+
 Tool for prepatching minecraft source files. Intended for use with [ModPatcher](https://github.com/nallar/ModPatcher).
 
 Copyright &copy; 2014, nallar <rallan.pcl+gt@gmail.com>
